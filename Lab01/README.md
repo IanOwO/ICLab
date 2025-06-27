@@ -12,7 +12,8 @@
 這次只能使用組合電路進行設計，我並不確定是否能實作出min-heap priority queue來建構huffman tree。因此我在這次的lab中選擇用sorting配合窮舉法來設計這次的電路。在畫出樹狀圖後，我發現如果進行排序後，只會有4種樹的形狀，且能夠在各層的比較時順便得到樹的樣子。
 
  - Sorting
-> 可以參考https://bertdobbelaere.github.io/sorting_networks.html。聽說以前有用到不只一次，但我只有在這次的lab用到而已。
+> 可以參考https://bertdobbelaere.github.io/sorting_networks.html
+。聽說以前有用到不只一次，但我只有在這次的lab用到而已。
 
 在sorting前，我將原先給入的數字加上他們最終需要被shift的位數，在最後output時可以直接shift並將encode結果移到正確位置上。
 
