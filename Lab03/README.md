@@ -29,8 +29,8 @@ input會是16個gate的delay值和32條wire。測資會確保不會出現wire lo
 紀錄每個點的parent node。就可以在後面從0一步一步走到1，同時輸出這條路徑。最開始需要將start node以外的
 node都設定成無限大，而按照給定邊數及大小會發現255是不可能正常產生的delay，因此便可以使用255來當作無限大的值。
 
-對於graph的處理我選擇使用一個16/*16的adjacency matrix，我認為這是由於verilog的特性，並不會像是一般c
-在時間複雜度上會變成n/*n，同時動態調整也不適合verilog。我透過將gate delay作為edge weight，舉例來說：
+對於graph的處理我選擇使用一個16\*16的adjacency matrix，我認為這是由於verilog的特性，並不會像是一般c
+在時間複雜度上會變成n\*n，同時動態調整也不適合verilog。我透過將gate delay作為edge weight，舉例來說：
 node0到node1這條edge的weight是node1的delay。最後只需要將start node的delay加上去就能得到最大的delay。
 
 ## 心得
