@@ -23,7 +23,7 @@ floating point DesignWare IP。因為這部分的電路很大，需要共用這�
 
 ## 未實作優化想法
 
-可以提早在input矩陣就開始計算，減少後面除法IP的loading，才能在不影響latency情況下減少除法IP的使用。
+可以提早在input矩陣就開始計算，減少後面除法IP的loading，才能在不影響latency情況下減少除法IP的個數。
 
 ## 心得
 
