@@ -1,29 +1,35 @@
-# Lab01 Huffman Coding
+# Lab04 Two Head Attention
 
-實作5個數字的huffman coding，每個數字分別是5 bits。只能使用組合電路。Clock period是固定的，因此performance只看面積而已。
+這次的lab是要做two head attetion，實際上就是進行許多的矩陣運算，
+包含矩陣的乘法、scaling、softmax。因此對於這種形式的運算，就需要進行pipeline的處理。
+在這次的矩陣中，我們需要進行的運算是floating point，因此需要透過使用符合ieee規格的
+floating point DesignWare IP。因為這部分的電路很大，需要共用這些IP才能避免超出面積的最大限制。
 
 ## Grading Policy
 - Function Validity : 70%
-- Performance : area 30%
-- cycle time固定20ns、只能使用組合電路
+- Performance : area \* latency \* clock period 30%
 
 ## 想法
 
-這次只能使用組合電路進行設計，我並不確定是否能實作出min-heap priority queue來建構huffman tree。因此我在這次的lab中選擇用sorting配合窮舉法來設計這次的電路。在畫出樹狀圖後，我發現如果進行排序後，只會有4種樹的形狀，且能夠在各層的比較時順便得到樹的樣子。
+- 因為需要進行pipeline才能有好的performance，因此我建議先畫pipeline diagram來確定自己的datapath。
+這樣才能方便的計算所需要的IP數量和共用的可能性。由於會需要共用IP，因此我認為透過用case去管理IP的input和output
+比較方便，可以快速配置IP空閒的cycle。
 
- - Sorting
-> 可以參考https://bertdobbelaere.github.io/sorting_networks.html
-。聽說以前有用到不只一次，但我只有在這次的lab用到而已。
+- 我發現這次的許多數值在運算過後就不會再次被用到，所以我進行register的共用來省一些面積。這次的數值是32個bit的多個矩陣，
+因此在面積上會省到滿多的。另外我有透過傳遞變數，讓我可以從固定一個位置來取得需要進入IP計算的數值。
 
-在sorting前，我將原先給入的數字加上他們最終需要被shift的位數，在最後output時可以直接shift並將encode結果移到正確位置上。
+- 合成需要蠻多時間的，因此可以先確保自己03過了之後再來修改。如果03一直fail，可以考慮將所有變數都進行reset，簡單的排除這個部分的問題。
+我在這次的lab之後大部分03 error都是因為reset的問題。
 
- - Tree Construction
-> 總共需要4次運算，才能建構出這5個數字的huffman tree。我透過設立2個flag來區分各種樹的長相
-1. 可以直接給定最小的2個數字的最小一位encode結果和算出他們的總和
-2. 用總和去比較第二大的數字，就能夠判斷這次要使用的兩個數字為何，接著再去給定encode結果和算出總和
-3. 根據第二次計算的結果來決定這次應該用哪些數值進行比較
-4. 用2個flag來給定最終的encode結果
+## 未實作優化想法
+
+可以提早在input矩陣就開始計算，減少後面除法IP的loading，才能在不影響latency情況下減少除法IP的使用。
 
 ## 心得
 
-我在這堂課之前有不少verilog的經驗，因此在想好演算法的實作細節後，蠻快就能過01了。不過我是第一次使用工作站上的資源，因此花費了蠻多時間在熟悉各種工具，以及處裡latch的情況。建議沒用過的人可以在這次的lab的時間多多練習nWave。由於這次的lab只有組合電路而已，能進行的優化沒有想像中的多。大部分我的優化都是經過反覆嘗試得出的最優解。
+我認為這次難度有比上次還高，也很難提供夠多具體的想法。概述就是進行pipeline和資源共用，但有許多實作上的細節需要處理。
+由於這次合成需要花蠻多時間的，因此也很難有太多時間去嘗試不同的寫法。我自己是嘗試我最初的想法，沒有做非常細的pipeline，
+一次對一排進行運算，並且想辦法只使用5個除法IP。這部分是汲取考古的心得，知道除法IP面積很大。幸好我寫完後面積並沒有爆掉。
+不過最後沒有再壓clock period的原因是因為面積逼進極限了，也許做更細的pipeline便可以減少面積，就能有空間去壓低clock period。
+我後來有想一個更細的pipeline，能夠減少乘法跟加法IP的個數，但是會稍微提升一點latency，因此在performance上只會提升一點點，
+沒辦法像best code一樣能夠減少除法IP的個數。
