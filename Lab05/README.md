@@ -1,29 +1,43 @@
-# Lab01 Huffman Coding
+# Lab05 Motion Vector Difference Matching
 
-實作5個數字的huffman coding，每個數字分別是5 bits。只能使用組合電路。Clock period是固定的，因此performance只看面積而已。
+這次要計算兩張圖片中特定區域的Bilinear Interpolation(BI)，接著計算兩張圖片特定區域
+的Sum of Absolute Difference(SAD)，並找出最小的一個SAD值輸出他的編號以及數值。以演算法
+的角度來看，這次很簡單，同時也很好理解。難點在於要將兩張圖片都load進電路並且存入sram中，
+每張圖片分別是128\*128 pixels，每個pixel有8bit的data。因此，
+在存取時就需要考慮一次能從sram讀出的區域大小。而在給定的sram規格下，一定會遇到有情況是需要跨
+entry存取。另外要特別說明，這次的lab會在lab11再次被用到，到時候需要用這次的電路去進行apr，
+以我的經驗而言，這次performance好的也比較容易在lab11好。
 
 ## Grading Policy
 - Function Validity : 70%
-- Performance : area 30%
-- cycle time固定20ns、只能使用組合電路
+- Performance : area ^ 2 \* latency \* clock period 30%
 
 ## 想法
 
-這次只能使用組合電路進行設計，我並不確定是否能實作出min-heap priority queue來建構huffman tree。因此我在這次的lab中選擇用sorting配合窮舉法來設計這次的電路。在畫出樹狀圖後，我發現如果進行排序後，只會有4種樹的形狀，且能夠在各層的比較時順便得到樹的樣子。
+- sram處理
 
- - Sorting
-> 可以參考https://bertdobbelaere.github.io/sorting_networks.html
-。聽說以前有用到不只一次，但我只有在這次的lab用到而已。
+1. 由於已經知道這次的電路會在後面需要進行apr，因此我有刻意讓sram比較方正一點，確保之後apr時能比較輕鬆。
+2. 每次計算需要存取11個pixel，以我自己使用的64bit entry為例，一次能讀8個pixel，理想情況下能夠在兩次讀取完成。
+可是如果起始的pixel是落在第一次讀取sram data時的後面2個，就會需要讀取3次。我自己的處理方式是每次都花3個cycle去處理，
+統一每次計算的所需的cycle數。
+3. 由於計算BI值時需要兩排的資訊，如果我將一張圖片存在一個sram裡的話，計算一排的BI值需要存取sram 6次。
+我透過將圖片的奇數和偶數列分別存在兩個sram裡，就能在3次存取sram後開始計算BI值了。
 
-在sorting前，我將原先給入的數字加上他們最終需要被shift的位數，在最後output時可以直接shift並將encode結果移到正確位置上。
+- pipeline方式
 
- - Tree Construction
-> 總共需要4次運算，才能建構出這5個數字的huffman tree。我透過設立2個flag來區分各種樹的長相
-1. 可以直接給定最小的2個數字的最小一位encode結果和算出他們的總和
-2. 用總和去比較第二大的數字，就能夠判斷這次要使用的兩個數字為何，接著再去給定encode結果和算出總和
-3. 根據第二次計算的結果來決定這次應該用哪些數值進行比較
-4. 用2個flag來給定最終的encode結果
+- 取最小值
+
+因為這次不需要排序。只需要找出最小值。因此我並沒有用lab01的sorting法，而是讓三個一組比較，第一個cycle比較三組中的三個最小值，下一個cycle就能取得全部最小的值。
+由於我認為這次其他地方的loading已經很大，所以就沒有減少這邊使用的比較器。
+
+## 未實作優化想法
+
+可以想辦法去控制讀取sram的次數，我自己的實作方法是固定讀取次數，讓讀取一排pixel全部都是3次讀取。如果需要去控制的話要考慮在兩張圖片取得特定區域會有4種
+可能性，需要讓電路能夠對全部情況都能正常處理。
 
 ## 心得
 
-我在這堂課之前有不少verilog的經驗，因此在想好演算法的實作細節後，蠻快就能過01了。不過我是第一次使用工作站上的資源，因此花費了蠻多時間在熟悉各種工具，以及處裡latch的情況。建議沒用過的人可以在這次的lab的時間多多練習nWave。由於這次的lab只有組合電路而已，能進行的優化沒有想像中的多。大部分我的優化都是經過反覆嘗試得出的最優解。
+這次的lab難度真的很高，雖然從演算法的角度而言很好理解，但是實作細節上有很多需要處理的地方，尤其是在pipeline的部分。
+這是由於計算SAD值的方式時並不能按照BI值出來的順序使用，需要特別的使用順序才能減少使用的BI buffer數量。
+最終我使用6排的BI buffer完成全部的計算。另外，這次lab學習到的sram相當實用，在下個lab以及兩個project都會用到，
+因此這部分蠻需要熟悉的。
