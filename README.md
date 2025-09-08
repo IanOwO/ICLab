@@ -6,6 +6,7 @@ Score: A+ (90 + 3(bonus lab) + 些微調分)
 ## Score
 
 > 全部lab跟project都是1st demo
+
 > Lab 08, Lab09, Lab 10, Final Project 各有5分的bonus report
 
 |              | Lab 01 | Lab 02 | Lab 03 | Lab 04 | Lab 05 | Lab 06 | Midterm Project |
